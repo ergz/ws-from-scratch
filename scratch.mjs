@@ -47,7 +47,22 @@ function soRead(conn) {
 		conn.socket.resume();
 	});
 }
-function soWrite(conn, data);
+function soWrite(conn, data) {
+	console.assert(data.length > 0);
+	return new Promise((resolve, reject) => {
+		if (conn.err) {
+			reject(conn.err);
+			return;
+		}
+	})
+	conn.socket.write(data, (err) => {
+		if (err) {
+			reject(err);
+		} else {
+			resolve();
+		}
+	})
+}
 function soInit(socket) {
 	const conn = new TCPConn(socket, reader = null, err = null, ended = false);
 	socket.on("data", (data) => {
