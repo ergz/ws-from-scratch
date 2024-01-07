@@ -1,8 +1,26 @@
 import * as net from "net";
 
+/*
+ * TCPConn is a class to store data for the socket object, that is Promise-based.
+ *
+ * */
+class TCPConn {
+  constructor(socket, reader = null, err = null, ended = false) {
+    this.socket = socket;
+    this.reader = reader;
+    this.err = err;
+    this.ended = ended;
+  }
+}
+
 /* serveClient
  *
  * read data from client connection, log the data and write the data back to client
+ *
+ * given a socket, the function will serve a client by first initializing a TCP connection 
+ * object from the socket provided. It then continuously reads from the connection async. 
+ * If the data is every returned with length == 0 then the event loop is terminated. At this point
+ * we respond back the clinet by writting data back to the client.
  * */
 async function serveClient(socket) {
   const conn = soInit(socket);
@@ -39,22 +57,20 @@ server.on("error", (err) => {
 server.on("connection", newConn);
 server.listen({ host: "127.0.0.1", port: "1234" });
 
-/*
- * TCPConn is a class to store data for the socket object.
- *
- * */
-class TCPConn {
-  constructor(socket, reader = null, err = null, ended = false) {
-    this.socket = socket;
-    this.reader = reader;
-    this.err = err;
-    this.ended = ended;
-  }
-}
-
 /* soInit
  *
  * The soInit function wraps a socket object from net.socket
+ *
+ * To initialize a socket in this case means adding a few callbacks for socket events:
+ *
+ * "data" - for the data event we first pause incoming events and use the conn.reader.resolve
+ *          to resolve the current data event. Once done we set reader to null to indicate this.
+ *
+ * "end" - for the "end" event we simply resolve with empty byte and set reader to null.
+ *
+ * "error" - for the "error" event we reject and set reader to null.
+ * 
+ * return: we return the new TCPconn with socket as socket property and corresponding socket callbacks.
  * */
 function soInit(socket) {
   // create a tcp connection object
