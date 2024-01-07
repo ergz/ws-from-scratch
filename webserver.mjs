@@ -1,5 +1,22 @@
 import * as net from "net";
 
+let server = net.createServer({ pauseOnConnect: true });
+server.on("error", (err) => {
+  throw err;
+});
+server.on('connection', newConn);
+server.listen({host: '127.0.0.1', port: 1234});
+
+
+class TCPListener {
+  constructor(socket, reader = null) {
+    this.socket = socket;
+    this.reader = reader;
+  }
+}
+
+function soListen(){};
+function soAccept(){};
 /*
  * TCPConn is a class to store data for the socket object, that is Promise-based.
  *
@@ -50,13 +67,6 @@ async function newConn(socket) {
   }
 }
 
-let server = net.createServer({ pauseOnConnect: true });
-server.on("error", (err) => {
-  throw err;
-});
-server.on("connection", newConn);
-server.listen({ host: "127.0.0.1", port: "1234" });
-
 /* soInit
  *
  * The soInit function wraps a socket object from net.socket
@@ -91,7 +101,7 @@ function soInit(socket) {
     }
   });
 
-  socket.on("error", (error) => {
+  socket.on("error", (err) => {
     conn.err = err;
     if (conn.reader) {
       conn.reader.reject(err);
@@ -115,7 +125,7 @@ function soRead(conn) {
       return;
     }
     conn.reader = { resolve: resolve, reject: reject };
-    conn.resume();
+    conn.socket.resume();
   });
 }
 
